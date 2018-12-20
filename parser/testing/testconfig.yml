@@ -1,0 +1,12 @@
+KEY: VALUE
+KEY_2: AlphanumericValue1
+KEY-3: Value With Spaces
+key-4: lowercase key
+KeY5: value with colon : text
+KEY-6: value with comment # comment here
+KEY=7: key with equal sign
+KEY8: value with two comments # comment 1 #comment 2
+KEY9: value/with/slashes
+EMPTYVALUE:
+
+KEY10: key-value pair after an empty row ^
