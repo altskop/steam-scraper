@@ -33,9 +33,16 @@ def percentage(part, whole):
     return 100 * float(part) / float(whole)
 
 
-def str_to_bool(v):
+def get_bool(v):
     """Returns True if the passed string contains 'yes', 'true', 't' or 1."""
-    return v.lower().lstrip() in ("yes", "true", "t", "1")
+    if type(v) is bool:
+        return v
+    elif type(v) is str:
+        return v.lower().lstrip() in ("yes", "true", "t", "1")
+    elif type(v) is int:
+        return v == 1
+    else:
+        raise ValueError("Unexpected variable type")
 
 
 def printcolor(string, color):

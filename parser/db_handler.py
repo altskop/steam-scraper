@@ -32,7 +32,7 @@ class DBHandler:
         c = cursor
         print("Verifying integrity of the database...")
         c.execute("select id, name, type, required_age, is_free, full_game_id, detailed_description,"
-                  "about_the_game, short_description, price, recommendations, release_date, screenshots,"
+                  "about_the_game, short_description, price, rating, recommendations, release_date, screenshots,"
                   "movies, achievements from games;")
         c.execute("select name, gameid from tags;")
         c.execute("select name, gameid from languages;")
@@ -42,6 +42,7 @@ class DBHandler:
         c.execute("select name, gameid from categories;")
         c.execute("select name, gameid from genres;")
         c.execute("select name, status, gameid from platforms;")
+        c.execute("select id from inaccessible;")
         print("Database passed verification.")
         return True
 
@@ -58,6 +59,7 @@ class DBHandler:
                 drop table if exists genres;
                 drop table if exists platforms;
                 drop table if exists tags;
+                drop table if exists inaccessible;
                 CREATE TABLE games(
                 id integer primary key not null,
                 name varchar(200) not null,
@@ -69,7 +71,9 @@ class DBHandler:
                 about_the_game text,
                 short_description text,
                 price integer,
+                rating tinyint,
                 recommendations integer,
+                is_released boolean,
                 release_date datetime,
                 screenshots integer,
                 movies integer,
@@ -82,6 +86,7 @@ class DBHandler:
                 CREATE TABLE genres(name varchar(120), gameid integer, FOREIGN KEY(gameid) REFERENCES games(id));
                 CREATE TABLE platforms(name varchar(30), status boolean, gameid integer, FOREIGN KEY(gameid) REFERENCES games(id));
                 CREATE TABLE tags(name varchar(120), gameid integer, FOREIGN KEY(gameid) REFERENCES games(id));
+                CREATE TABLE inaccessible(id integer primary key not null);
                 """
         c.executescript(query)
 

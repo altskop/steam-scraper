@@ -1,20 +1,15 @@
 import requests
 import sqlite3
-import re
-from time import sleep
 from . import common, parser
+from time import sleep
+import re
 
 
-class GameParser(parser.Parser):
+class UpdateGamesParser(parser.Parser):
 
-    def __init__(self, config_filename: str, verbose: bool, override_missing: bool):
-        self.override_missing = override_missing
+    def __init__(self, config_filename: str, verbose: bool):
         parser.Parser.__init__(self, config_filename, verbose)
         self.APP_DETAILS_URL = "https://store.steampowered.com/api/appdetails?appids="
-
-    def get_records_list(self):
-        games_list = self.get_records_list_from_json(self.ALLGAMES_FILE)
-        return self.check_all_records(games_list)
 
     @staticmethod
     def split_languages(string):
@@ -32,58 +27,21 @@ class GameParser(parser.Parser):
             result_set.append(entry)
         return result_set
 
-    def check_all_records(self, games):
-        """
-        Prior to running queries, we first need to build a list of applications
-        to run queries on. To do that, we pull all appids from allgames.json and
-        choose those that satisfy our conditions (already in DB and don't have any
-        tags recorded). A list of those apps is then returned.
-        :param games: list of games from allgames.json
-        :return: list of game ids satisfying our requirements
-        """
+    def get_records_list(self):
         conn = sqlite3.connect(self.DATABASE_FILE)
-        result = []
-        for game in games:
-            appid = str(game["appid"])
-            if self.is_not_recorded(conn, appid) is True:
-                result.append(appid)
-        result = sorted(result, key=int)
-        return result
-
-    def is_not_recorded(self, conn, appid):
-        """
-        This method will check if the database already contains the record
-        of an application with a provided AppId.
-
-        The intended behaviour for this script is to only record tags when the
-        following condition is true:
-            - There are no existing records for a given application in games table
-            - There are no existing records for a given application in inaccessible table
-
-        :param conn: sqlite connection to utilize
-        :param appid: id of an application to run a check for
-        :return: True if satisfies the conditions, False otherwise
-        """
         with conn:
             c = conn.cursor()
-            if self.override_missing:
-                stmt = "select id from games where id=?"
-            else:
-                stmt = """select id from
-                       (select id from games
-                       union
-                       select id from inaccessible)
-                       where id=?"""
-            params = (appid,)
-            c.execute(stmt, params)
-            result = c.fetchall()
-            return len(result) == 0
+            stmt = """
+                    SELECT id
+                    FROM games;
+                    """
+            c.execute(stmt)
+            result = [item[0] for item in c.fetchall()]
+            return result
 
     def new_record(self, data, appid):
         """
-        Inserts a new record for a game using the data retrieved from
-        the json object retrieved from Steam API. There can only be one
-        record for an ID.
+        Updates an existing record with the current data
         :param data:
         :param appid:
         :return:
@@ -153,22 +111,29 @@ class GameParser(parser.Parser):
 
             release_date = common.get_from_json(data, "release_date")
             if release_date is not None:
-                is_released = not common.get_bool(release_date["coming_soon"])
+                coming_soon = not common.get_bool(release_date["coming_soon"])
                 release_date = self.date_formatter.format_date(release_date["date"])
             else:
-                is_released = False
+                coming_soon = False
                 release_date = None
 
-            stmt = "insert into games (id," \
-                   " name, type, required_age," \
-                   " is_free, full_game_id, detailed_description," \
-                   " about_the_game, short_description, price," \
-                   " recommendations, is_released, release_date, screenshots," \
-                   " movies, achievements) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
-            params = (appid, game_name, type, required_age, is_free, full_game_id, detailed_description,
-                      about_the_game, short_description, price, recommendations, is_released, release_date,
-                      screenshots_num, movies_num, achievements)
+            stmt = "update games set " \
+                   " name=?, type=?, required_age=?," \
+                   " is_free=?, full_game_id=?, detailed_description=?," \
+                   " about_the_game=?, short_description=?, price=?," \
+                   " recommendations=?, is_released=?, release_date=?, screenshots=?," \
+                   " movies=?, achievements=? where id=?"
+            params = (game_name, type, required_age, is_free, full_game_id, detailed_description,
+                      about_the_game, short_description, price, recommendations, coming_soon, release_date,
+                      screenshots_num, movies_num, achievements, appid)
             c.execute(stmt, params)
+
+            # Delete existing records to insert new ones instead
+            tables = ["languages", "developers", "publishers", "platforms", "metacritic", "categories", "genres"]
+            for table in tables:
+                stmt = "delete from %s where gameid = ?" % table
+                params = (appid,)
+                c.execute(stmt, params)
 
             if languages is not None:
                 for language in languages:
@@ -216,17 +181,10 @@ class GameParser(parser.Parser):
                     params = (name, appid)
                     c.execute(stmt, params)
 
-            self.printc("Record #" + str(appid) + " (" + game_name + ") inserted.", common.Color.OKGREEN)
-
-    def new_inaccessible_record(self, appid):
-        conn = sqlite3.connect(self.DATABASE_FILE)
-        with conn:
-            c = conn.cursor()
-            stmt = "insert into inaccessible (id) values(?)"
-            params = (appid,)
-            c.execute(stmt, params)
+            self.printc("Record #" + str(appid) + " (" + game_name + ") updated.", common.Color.OKGREEN)
 
     def get_record(self, appid):
+        appid = str(appid)
         self.printc("Running ID " + appid + "...", common.Color.ENDC)
         url = self.APP_DETAILS_URL + appid
         attempts = 0
@@ -238,7 +196,6 @@ class GameParser(parser.Parser):
                     if data["success"] is not False:
                         return data["data"]
                     else:
-                        self.new_inaccessible_record(appid)
                         return None
                 elif resp.status_code == 429:
                     attempts += 1
@@ -253,4 +210,3 @@ class GameParser(parser.Parser):
         self.printc("", common.Color.ENDC)
         common.printcolor("\n\nExecution finished. New records: " + str(self.current), common.Color.OKBLUE)
         print("Execution time: " + common.seconds_to_string(common.get_elapsed_time(self.start_time)))
-

@@ -7,6 +7,7 @@ import urllib
 from . import common
 from urllib import request
 from datetime import datetime
+from .date_formatter import DateFormatter
 
 
 class Parser(ABC):
@@ -16,6 +17,18 @@ class Parser(ABC):
 
     def __init__(self, config_filename: str, verbose: bool):
         print("Initialising parser...")
+
+        self.date_formatter = DateFormatter("%Y-%m-%d")
+        self.date_formatter.add_input_format("%b %d, %Y")
+        self.date_formatter.add_input_format("%B %d, %Y")
+        self.date_formatter.add_input_format("%d %b, %Y")
+        self.date_formatter.add_input_format("%d %B, %Y")
+        self.date_formatter.add_input_format("%b %d %Y")
+        self.date_formatter.add_input_format("%B %d %Y")
+        self.date_formatter.add_input_format("%d %b %Y")
+        self.date_formatter.add_input_format("%d %B %Y")
+        self.date_formatter.add_input_format("%b %Y")
+
         self.config = common.read_config_file(config_filename)
         self.TIMEOUT = int(self.config["TIMEOUT"])
         self.DATABASE_FILE = self.config["DATABASE_FILENAME"]
@@ -23,10 +36,12 @@ class Parser(ABC):
         self.starting_number = int(self.config["STARTING_APPID"])
         self.JSON_MAX_FILE_AGE = int(self.config["JSON_MAX_FILE_AGE"])
         self.LOGFILE = self.config["LOGFILE_NAME"]
+
         self.verbose = verbose
         if self.verbose is False: # If verbosity is off, create a new logfile
             with open(self.LOGFILE, "w") as logfile:
                 logfile.write("")
+
         self.ALL_GAMES_API_URL = "http://api.steampowered.com/ISteamApps/GetAppList/v0002/?key=STEAMKEY&format=json"
         self.start_time = 0
         self.current = 0

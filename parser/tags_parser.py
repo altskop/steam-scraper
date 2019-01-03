@@ -44,6 +44,7 @@ class TagsParser(parser.Parser):
                         stmt = "insert into tags (name, gameid) values(?,?)"
                         params = (tag, appid)
                         c.execute(stmt, params)
+                    self.succeed += 1
                     self.printc("Records for #" + str(appid) +" inserted.", common.Color.OKGREEN)
 
     def get_record(self, appid):
@@ -59,7 +60,6 @@ class TagsParser(parser.Parser):
                     tags = []
                     for tag in html_tags:
                         tags.append(tag.get_text().strip())
-                    self.succeed += 1
                     return tags
                 elif resp.status_code == 429:
                     attempts += 1

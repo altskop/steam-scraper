@@ -3,6 +3,8 @@ from parser import game_parser
 from parser import tags_parser
 from parser import db_handler
 from parser import common
+from parser import update_parser
+from parser import rating_parser
 
 DEFAULT_CONFIG_FILE = "config.yml"
 
@@ -19,12 +21,16 @@ if __name__ == "__main__":
                                  "parse games info from Steam API. However, the API does not provide tags info "
                                  "so no tags will be parsed. - tags - Will only parse games tags from Steam Web UI. "
                                  "It will only run for the games that have been saved to the database but have no "
-                                 "tags saved associated with them."
+                                 "tags saved associated with them. - update - Will loop through every game record already in"
+                                 "the dabatase and update it with the latest information."
                                  "",
-                            choices=("all", "games", "tags"))
+                            choices=("all", "games", "tags", "update", "rating_update"))
     arg_parser.add_argument("-v", "--verbose",
                             help="Increase verbosity of the script, displaying every record it goes through. "
                                  "By default that output goes to a log file.",
+                            action="store_true")
+    arg_parser.add_argument("-f", "--force",
+                            help="Don't skip records that were previously inaccessible, attempt to retrieve them again.",
                             action="store_true")
     args = arg_parser.parse_args()
 
@@ -33,14 +39,21 @@ if __name__ == "__main__":
     db_handler.DBHandler(db_file)
 
     verbose = args.verbose
+    force = args.force
     if args.runtype == "all":
-        game_parser = game_parser.GameParser(DEFAULT_CONFIG_FILE, verbose)
+        game_parser = game_parser.GameParser(DEFAULT_CONFIG_FILE, verbose, force)
         game_parser.start_parsing()
         tags_parser = tags_parser.TagsParser(DEFAULT_CONFIG_FILE, verbose)
         tags_parser.start_parsing()
     elif args.runtype == "games":
-        game_parser = game_parser.GameParser(DEFAULT_CONFIG_FILE, verbose)
+        game_parser = game_parser.GameParser(DEFAULT_CONFIG_FILE, verbose, force)
         game_parser.start_parsing()
     elif args.runtype == "tags":
         tags_parser = tags_parser.TagsParser(DEFAULT_CONFIG_FILE, verbose)
         tags_parser.start_parsing()
+    elif args.runtype == "update":
+        upd_parser = update_parser.UpdateGamesParser(DEFAULT_CONFIG_FILE, verbose)
+        upd_parser.start_parsing()
+    elif args.runtype == "rating_update":
+        rating_parser = rating_parser.RatingParser(DEFAULT_CONFIG_FILE, verbose)
+        rating_parser.start_parsing()
