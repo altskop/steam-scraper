@@ -10,13 +10,13 @@ from datetime import datetime
 from .date_formatter import DateFormatter
 
 
-class Parser(ABC):
+class Scraper(ABC):
     """
-    Base class for Parsers.
+    Base class for Scraper.
     """
 
     def __init__(self, config_filename: str, verbose: bool):
-        print("Initialising parser...")
+        print("Initialising scraper...")
 
         self.date_formatter = DateFormatter("%Y-%m-%d")
         self.date_formatter.add_input_format("%b %d, %Y")
@@ -47,13 +47,13 @@ class Parser(ABC):
         self.current = 0
         self.games_list = self.get_records_list()
         self.total = len(self.games_list)
-        print("Parser initialised.")
+        print("Scraper initialised.")
 
     @abstractmethod
     def get_records_list(self):
         """
-        This method should get all the records to run parsing on. It
-        can do that in various ways such as JSON parsing, database
+        This method should get all the records to run scraping on. It
+        can do that in various ways such as JSON scraping, database
         quering etc.
         :return: type Sized of records
         """
@@ -83,22 +83,25 @@ class Parser(ABC):
             games = applist["applist"]["apps"]
             return games
 
-    def start_parsing(self):
+    def start_scraping(self):
         self.start_time = time.time()
-        print("Starting parsing...")
-        for entry in self.games_list:
-            if int(entry) >= self.starting_number:
-                data = self.get_record(entry)
-                if data is not None:
-                    self.new_record(data, entry)
+        print("Starting scraping...")
+        if len(self.games_list)>0:
+            for entry in self.games_list:
+                if int(entry) >= self.starting_number:
+                    data = self.get_record(entry)
+                    if data is not None:
+                        self.new_record(data, entry)
 
-            self.current = self.current + 1
-        self.on_finished()
+                self.current = self.current + 1
+            self.on_finished()
+        else:
+            print("No records to scrape. Exiting.")
 
     @abstractmethod
     def on_finished(self):
         """
-        This method is called after parsing is finished in start_parsing().
+        This method is called after scraping is finished in start_scraping().
         Implementations may choose to display various statistics or just an
         exit message.
         """

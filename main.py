@@ -1,18 +1,18 @@
 import argparse
-from parser import game_parser
-from parser import tags_parser
-from parser import db_handler
-from parser import common
-from parser import update_parser
-from parser import rating_parser
+from scraper import game_scraper
+from scraper import tags_scraper
+from scraper import db_handler
+from scraper import common
+from scraper import games_update_scraper
+from scraper import rating_scraper
 
 DEFAULT_CONFIG_FILE = "config.yml"
 
 if __name__ == "__main__":
-    arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument(dest="runtype",
+    arg_scraper = argparse.ArgumentParser()
+    arg_scraper.add_argument(dest="runtype",
                             help="Runtype for the script."
-                                 "- all - Will run parsers for all game info including tags. "
+                                 "- all - Will run scrapers for all game info including tags. "
                                  "This will take a very long time so you better find something to do. "
                                  "Watch a movie... or six. Go for a walk. Travel to another country. "
                                  "Find the love of your life. Get married. Get kids. Go through a divorce years later. "
@@ -25,14 +25,14 @@ if __name__ == "__main__":
                                  "the dabatase and update it with the latest information."
                                  "",
                             choices=("all", "games", "tags", "update", "rating_update"))
-    arg_parser.add_argument("-v", "--verbose",
+    arg_scraper.add_argument("-v", "--verbose",
                             help="Increase verbosity of the script, displaying every record it goes through. "
                                  "By default that output goes to a log file.",
                             action="store_true")
-    arg_parser.add_argument("-f", "--force",
+    arg_scraper.add_argument("-f", "--force",
                             help="Don't skip records that were previously inaccessible, attempt to retrieve them again.",
                             action="store_true")
-    args = arg_parser.parse_args()
+    args = arg_scraper.parse_args()
 
     config = common.read_config_file(DEFAULT_CONFIG_FILE)
     db_file = config["DATABASE_FILENAME"]
@@ -41,19 +41,19 @@ if __name__ == "__main__":
     verbose = args.verbose
     force = args.force
     if args.runtype == "all":
-        game_parser = game_parser.GameParser(DEFAULT_CONFIG_FILE, verbose, force)
-        game_parser.start_parsing()
-        tags_parser = tags_parser.TagsParser(DEFAULT_CONFIG_FILE, verbose)
-        tags_parser.start_parsing()
+        game_scraper = game_scraper.GameScraper(DEFAULT_CONFIG_FILE, verbose, force)
+        game_scraper.start_scraping()
+        tags_scraper = tags_scraper.TagsScraper(DEFAULT_CONFIG_FILE, verbose)
+        tags_scraper.start_scraping()
     elif args.runtype == "games":
-        game_parser = game_parser.GameParser(DEFAULT_CONFIG_FILE, verbose, force)
-        game_parser.start_parsing()
+        game_scraper = game_scraper.GameScraper(DEFAULT_CONFIG_FILE, verbose, force)
+        game_scraper.start_scraping()
     elif args.runtype == "tags":
-        tags_parser = tags_parser.TagsParser(DEFAULT_CONFIG_FILE, verbose)
-        tags_parser.start_parsing()
+        tags_scraper = tags_scraper.TagsScraper(DEFAULT_CONFIG_FILE, verbose)
+        tags_scraper.start_scraping()
     elif args.runtype == "update":
-        upd_parser = update_parser.UpdateGamesParser(DEFAULT_CONFIG_FILE, verbose)
-        upd_parser.start_parsing()
+        upd_scraper = games_update_scraper.UpdateGamesScraper(DEFAULT_CONFIG_FILE, verbose)
+        upd_scraper.start_scraping()
     elif args.runtype == "rating_update":
-        rating_parser = rating_parser.RatingParser(DEFAULT_CONFIG_FILE, verbose)
-        rating_parser.start_parsing()
+        rating_scraper = rating_scraper.RatingScraper(DEFAULT_CONFIG_FILE, verbose)
+        rating_scraper.start_scraping()

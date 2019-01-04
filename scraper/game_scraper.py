@@ -2,14 +2,14 @@ import requests
 import sqlite3
 import re
 from time import sleep
-from . import common, parser
+from . import common, scraper
 
 
-class GameParser(parser.Parser):
+class GameScraper(scraper.Scraper):
 
     def __init__(self, config_filename: str, verbose: bool, override_missing: bool):
         self.override_missing = override_missing
-        parser.Parser.__init__(self, config_filename, verbose)
+        scraper.Scraper.__init__(self, config_filename, verbose)
         self.APP_DETAILS_URL = "https://store.steampowered.com/api/appdetails?appids="
 
     def get_records_list(self):

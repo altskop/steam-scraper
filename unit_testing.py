@@ -1,14 +1,14 @@
 import unittest
-from parser import game_parser
-from parser import tags_parser
-from parser import db_handler
-from parser import common
-from parser.date_formatter import DateFormatter
+from scraper import game_scraper
+from scraper import tags_scraper
+from scraper import db_handler
+from scraper import common
+from scraper.date_formatter import DateFormatter
 import sqlite3
 import os
 
 
-TESTING_FOLDER = "parser/testing/"
+TESTING_FOLDER = "scraper/testing/"
 
 
 class TestPercentage(unittest.TestCase):
@@ -117,12 +117,12 @@ class TestDbHandler(unittest.TestCase):
         os.remove(TESTING_FOLDER+"testing_database.db")
 
 
-class TestGameParserIsRecorded(unittest.TestCase):
+class TestGameScraperIsRecorded(unittest.TestCase):
 
     def setUp(self):
         self.test_db = TESTING_FOLDER+"testing_database.db"
         self.conn = sqlite3.connect(self.test_db)
-        self.game_parser = game_parser.GameParser("config.yml", False, False)
+        self.game_scraper = game_scraper.GameScraper("config.yml", False, False)
         with self.conn:
             c = self.conn.cursor()
             c.execute("create table inaccessible (id integer primary key not null);")
@@ -130,12 +130,12 @@ class TestGameParserIsRecorded(unittest.TestCase):
             c.execute("insert into games values (20);")
 
     def test_is_recorded_non_existent(self):
-        result = game_parser.GameParser.is_not_recorded(self.game_parser, self.conn, 10)
-        self.assertTrue(result, "Is Recorded in game_parser not working")
+        result = game_scraper.GameScraper.is_not_recorded(self.game_scraper, self.conn, 10)
+        self.assertTrue(result, "Is Recorded in game_scraper not working")
 
     def test_is_recorded_multiple(self):
-        result = game_parser.GameParser.is_not_recorded(self.game_parser, self.conn, 20)
-        self.assertFalse(result, "Is Recorded in game_parser not working")
+        result = game_scraper.GameScraper.is_not_recorded(self.game_scraper, self.conn, 20)
+        self.assertFalse(result, "Is Recorded in game_scraper not working")
 
     def tearDown(self):
         os.remove(TESTING_FOLDER+"testing_database.db")

@@ -1,6 +1,6 @@
 DATABASE_FILENAME: db # Sqlite database filename
 ALLGAMES_FILENAME: allgames.json # File that contains all steam games in JSON format
 TIMEOUT: 45 # Timeout in seconds to sleep when an HTTP error occurs
-STARTING_APPID: 597322 # From which APPID start pulling data (starting from it and going up)
-JSON_MAX_FILE_AGE: 0 # If the JSON file containing all steam apps is older than this number of days, a prompt will appear to update it.
+STARTING_APPID: 0 # From which APPID start pulling data (starting from it and going up)
+JSON_MAX_FILE_AGE: 7 # If the JSON file containing all steam apps is older than this number of days, a prompt will appear to update it.
 LOGFILE_NAME: log # Name of a log file to which parser should redirect its output

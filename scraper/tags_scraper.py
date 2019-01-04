@@ -1,14 +1,14 @@
 import requests
 import sqlite3
-from . import common, parser
+from . import common, scraper
 from bs4 import BeautifulSoup
 from time import sleep
 
 
-class TagsParser(parser.Parser):
+class TagsScraper(scraper.Scraper):
 
     def __init__(self, config_filename: str, verbose: bool):
-        parser.Parser.__init__(self, config_filename, verbose)
+        scraper.Scraper.__init__(self, config_filename, verbose)
         self.APP_DETAILS_URL = "https://store.steampowered.com/app/"
         self.succeed = 0
         self.fail = 0
@@ -69,7 +69,7 @@ class TagsParser(parser.Parser):
                     self.printc("\rNo such page exists. #", common.Color.FAIL)
                     self.fail += 1
                     return None
-            except requests.ConnectionError as e:
+            except requests.ConnectionError or ConnectionResetError as e:
                 attempts += 1
                 self.printc("\rError occurred " + str(e.__class__) + ". #" + str(attempts), common.Color.FAIL)
                 sleep(self.TIMEOUT)

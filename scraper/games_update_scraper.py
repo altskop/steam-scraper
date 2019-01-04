@@ -1,14 +1,14 @@
 import requests
 import sqlite3
-from . import common, parser
+from . import common, scraper
 from time import sleep
 import re
 
 
-class UpdateGamesParser(parser.Parser):
+class UpdateGamesScraper(scraper.Scraper):
 
     def __init__(self, config_filename: str, verbose: bool):
-        parser.Parser.__init__(self, config_filename, verbose)
+        scraper.Scraper.__init__(self, config_filename, verbose)
         self.APP_DETAILS_URL = "https://store.steampowered.com/api/appdetails?appids="
 
     @staticmethod
