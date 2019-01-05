@@ -1,6 +1,6 @@
 import unittest
 from scraper import game_scraper
-from scraper import tags_scraper
+from scraper import webui_scraper
 from scraper import db_handler
 from scraper import common
 from scraper.date_formatter import DateFormatter

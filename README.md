@@ -4,7 +4,7 @@
 
 Steam Apps Scraper is a configurable and fully automatic scraper designed to pull public data from Steam via its API or WebUI and store it in a SQLite database. It is primarily used to gather data on various apps released on Steam for the purpose of data analysis.
 
-If you came here to get that data, but don't feel like waiting for 3-4 days for the scraper to work, you may get the latest database file [HERE](http://).
+If you came here to get that data, but don't feel like waiting for 3-4 days for the scraper to pull it, you can get the latest database file [HERE](https://drive.google.com/open?id=14V7gfa8Pk4YTgkS999Z_3lktK_60YFHY).
 
 
 ## Core Features:
@@ -32,7 +32,7 @@ To run the script, execute the following command in the root directory of the pr
 python3 main.py MODE [-v -f]
 ```
 Where:
-- MODE is the execution mode (can be one of the following: `all, games, tags, update`). Run with `-h` to get more information on execution modes.
+- MODE is the execution mode (can be one of the following: `all, api, webui, update`). Run with `-h` to get more information on execution modes.
 - `-v or --verbose` will increase the verbosity of the script.
 - `-f or --force` will force the script to go through the records that were marked as unreachable during previous runs. 
 
